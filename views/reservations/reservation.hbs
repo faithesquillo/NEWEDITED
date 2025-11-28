@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Online Airline Ticketing System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f4f1ec 0%, #dad1c8 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-nav .nav-link {
+            color: #000000;
+        }
+
+        .glass-nav .nav-link.active {
+            font-weight: 500;
+            color: #FF6F00;
+        }
+
+        .glass-nav .navbar-brand {
+            color: #000000;
+        }
+
+        .glass-form {
+            max-width: 500px;
+            margin: 60px auto;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 30px 40px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-form h3 {
+            text-align: center;
+            color: #000;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.6);
+            border: none;
+            border-radius: 10px;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+        .btn-custom {
+            background-color: #FF6F00;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .btn-custom:hover {
+            background-color: #e65c00;
+        }
+
+        .seat-btn {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            font-size: .65rem;
+            line-height: 1;
+            text-align: center;
+        }
+
+        .aisle {
+            width: 10px;
+        }
+
+        .row-chip {
+            width: 22px;
+            text-align: right;
+            font-size: .65rem;
+            color: #6c757d;
+        }
+
+        .seat-row {
+            margin-bottom: 2px;
+        }
+
+        .modal-seat-body {
+            max-height: 340px;
+            overflow: auto;
+        }
+
+        .legend .swatch {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            border-radius: .25rem;
+            border: 1px solid rgba(0, 0, 0, .1);
+            margin-right: .35rem;
+            vertical-align: middle;
+        }
+
+        .swatch-available {
+            background: var(--bs-body-bg);
+        }
+
+        .swatch-selected {
+            background: var(--bs-primary);
+        }
+
+        .swatch-occupied {
+            background: var(--bs-secondary);
+            opacity: .5;
+        }
+
+        .swatch-premium {
+            background: var(--bs-warning);
+        }
+
+        #confirmbooking {
+            background-color: #FF6F00;
+            color: white;
+            border-radius: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+    <nav class="navbar sticky-top glass-nav">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                {{#if user.role}}
+                {{#ifEquals user.role "Admin"}}
+                Online Airline Ticketing System - Admin
+                {{else}}
+                Online Airline Ticketing System
+                {{/ifEquals}}
+                {{else}}
+                Online Airline Ticketing System
+                {{/if}}
+            </span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    {{#if user.role}}
+                    {{#ifEquals user.role "Admin"}}
+                    <li class="nav-item"><a class="nav-link" href="/adminSearchPage">Search & Manage Flights</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/userManagement">User Management</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations List</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+                    {{else ifEquals user.role "User"}}
+                    <li class="nav-item"><a class="nav-link" href="/searchPage">Search Flights</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+                    {{/ifEquals}}
+                    {{else}}
+                    <li class="nav-item"><a class="nav-link active" href="/searchPage">Search Flights</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/signup">Create Account</a></li>
+                    {{/if}}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="glass-form">
+        <h3>Book Flight: {{flight.origin}} &rarr; {{flight.destination}}</h3>
+        <h6 class="text-center text-muted mb-3">
+            Flight {{flight.flightNumber}} | ${{flight.price}}
+        </h6>
+
+        <form id="reservationForm" novalidate>
+
+            <input type="hidden" id="flightId" value="{{flight._id}}">
+
+            <div class="section-title">Personal Information</div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="firstName">First Name</label>
+                    <input type="text" id="firstName" class="form-control" placeholder="Juan" value="{{user.firstName}}"
+                        required minlength="2" pattern="^[A-Za-z][A-Za-z\s'-]{1,}$">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="lastName">Last Name</label>
+                    <input type="text" id="lastName" class="form-control" placeholder="Dela Cruz"
+                        value="{{user.lastName}}" required minlength="2"
+                        pattern="^[A-Za-z][A-Za-z\s'-]{1,}$">
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="juandelacruz@gmail.com"
+                        value="{{user.email}}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="passport">Passport Number</label>
+                    <input type="text" id="passport" class="form-control" placeholder="A1234567" required
+                        pattern="^[A-Za-z0-9]{7,9}$">
+                </div>
+            </div>
+
+            <div class="section-title">Optional Package Selection</div>
+
+            <div class="mb-3">
+                <label class="form-label" for="mealOption">Meal Options</label>
+                <select class="form-select" id="mealOption">
+                    <option value="0">None - $0</option>
+                    <option value="10">Standard - $10</option>
+                    <option value="20">Vegetarian - $20</option>
+                    <option value="30">Kosher - $30</option>
+                    <option value="40">Halal - $40</option>
+                    <option value="50">Diabetic - $50</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Seat Selection</label>
+                <div class="input-group">
+                    <input id="seatDisplay" class="form-control form-control-sm" type="text"
+                        placeholder="No seat selected" readonly>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#seatModal">Choose Seat</button>
+                </div>
+                <input type="hidden" id="seatValue" name="seat" value="">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="baggage">Extra Baggage (kg)</label>
+                <input type="number" id="baggage" class="form-control" value="0" min="0" step="1">
+            </div>
+
+            <button type="submit" class="btn btn-custom w-100">Submit</button>
+        </form>
+
+        <div id="formMessage" class="mt-3"></div>
+    </div>
+
+    <div class="modal fade" id="seatModal" tabindex="-1" aria-labelledby="seatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title" id="seatModalLabel">A320 Seat Selection</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body modal-seat-body">
+                    <div class="legend small d-flex flex-wrap gap-3 mb-2">
+                        <span><span class="swatch swatch-available"></span>Available</span>
+                        <span><span class="swatch swatch-selected"></span>Selected</span>
+                        <span><span class="swatch swatch-occupied"></span>Occupied</span>
+                        <span><span class="swatch swatch-premium"></span>Premium</span>
+                    </div>
+                    <div id="seatGrid" class="d-flex flex-column"></div>
+                </div>
+
+                <div class="modal-footer py-2">
+                    <button type="button" id="clearSeats" class="btn btn-outline-secondary btn-sm">Clear</button>
+                    <button type="button" id="applySeats" class="btn btn-primary btn-sm"
+                        data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade glass-modal" id="billModal" tabindex="-1" aria-labelledby="billModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="billModalLabel">Bill Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="small text-muted">Passenger</div>
+                        <div id="sumPassenger" class="fw-semibold"></div>
+                        <div id="sumContact" class="text-muted"></div>
+                        <div id="sumPassport" class="text-muted"></div>
+                        <div id="sumSeat" class="mt-2"></div>
+                        <div id="sumMeal"></div>
+                        <div id="sumBaggage"></div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <span>Base Fare</span><span id="sumBaseFare">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Seat Surcharge</span><span id="sumSeatFee">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Meal</span><span id="sumMealFee">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Baggage</span><span id="sumBaggageFee">$0.00</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-2">
+                        <span class="fw-semibold">Subtotal</span><span id="sumSubtotal" class="fw-semibold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tax (12%)</span><span id="sumTax">$0.00</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between fs-5 mt-2">
+                        <span class="fw-bold">Total</span><span id="sumTotal" class="fw-bold">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Edit
+                        Details</button>
+                    <button type="button" id="confirmBooking" class="btn btn-primary">Confirm &amp; Pay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    $(function () {
+        const TOTAL_ROWS = 30;
+        const PREMIUM_ROWS = new Set([1, 2, 3, 4]);
+
+        const occupiedSeatsList = {{{ occupiedSeats }}} || [];
+    const OCCUPIED = new Set(occupiedSeatsList);
+
+    const LETTERS = ["A", "B", "C", "D", "E", "F"];
+
+    const $seatGrid = $("#seatGrid");
+    const $seatDisplay = $("#seatDisplay");
+    const $seatValue = $("#seatValue");
+    const $form = $("#reservationForm");
+    const $msg = $("#formMessage");
+
+    const flightId = $("#flightId").val();
+
+    // Check if user is defined (from the script block below)
+    const user = window.user;
+
+    if (!flightId) {
+        console.error('No flightId found in hidden input!');
+        $msg.html('<div class="alert alert-danger" role="alert">Error: No flight selected. Please <a href="/">go back to search</a>.</div>');
+        $form.find('button[type="submit"]').prop('disabled', true);
+    }
+
+    function buildSeatGrid() {
+        $seatGrid.empty();
+        for (let r = 1; r <= TOTAL_ROWS; r++) {
+            const $row = $('<div class="d-flex align-items-center seat-row"></div>');
+            $row.append($('<div class="row-chip"></div>').text(r));
+
+            const $left = $('<div class="d-flex gap-1"></div>');
+            for (let i = 0; i < 3; i++) $left.append(makeSeatBtn(`${r}${LETTERS[i]}`, r));
+            $row.append($left);
+            $row.append($('<div class="aisle"></div>'));
+
+            const $right = $('<div class="d-flex gap-1"></div>');
+            for (let i = 3; i < 6; i++) $right.append(makeSeatBtn(`${r}${LETTERS[i]}`, r));
+            $row.append($right);
+            $seatGrid.append($row);
+        }
+    }
+
+    function makeSeatBtn(code, rowNum) {
+        const premium = PREMIUM_ROWS.has(rowNum);
+        const baseCls = premium ? 'btn-outline-warning' : 'btn-outline-primary';
+        const $btn = $(`<button type="button" class="btn btn-sm seat-btn ${baseCls}" data-seat="${code}">${code.slice(-1)}</button>`);
+        if (OCCUPIED.has(code)) {
+            $btn.removeClass('btn-outline-primary btn-outline-warning')
+                .addClass('btn-outline-secondary')
+                .prop('disabled', true)
+                .attr('aria-disabled', 'true');
+        }
+        return $btn;
+    }
+
+    $(document).on('click', '.seat-btn', function () {
+        const $btn = $(this);
+        if ($btn.prop('disabled')) return;
+        const already = $btn.hasClass('active');
+        $seatGrid.find('.seat-btn.active').removeClass('active');
+        if (!already) $btn.addClass('active');
+    });
+
+    $("#clearSeats").on('click', () => {
+        $seatGrid.find('.seat-btn.active').removeClass('active');
+    });
+    $("#applySeats").on('click', () => {
+        const $active = $seatGrid.find('.seat-btn.active').first();
+        const seat = $active.length ? $active.data('seat') : '';
+        $seatDisplay.val(seat);
+        $seatValue.val(seat);
+    });
+
+    document.getElementById('seatModal').addEventListener('shown.bs.modal', () => {
+        if (!$seatGrid.children().length) buildSeatGrid();
+    });
+
+    $form.on('submit', function (e) {
+        e.preventDefault();
+        $msg.empty();
+        clearErrors();
+
+        const errors = [];
+        const firstName = $("#firstName").val().trim();
+        const lastName = $("#lastName").val().trim();
+        const email = $("#email").val().trim();
+        const passport = $("#passport").val().trim();
+        const baggage = parseInt($("#baggage").val(), 10);
+        const seat = $("#seatValue").val().trim();
+        const mealPrice = Number($("#mealOption").val());
+        const mealLabel = $("#mealOption option:selected").text();
+
+        // Validation checks
+        if (!/^[A-Za-z][A-Za-z\s'-]{1,}$/.test(firstName)) {
+            errors.push('First name must be at least 2 characters.');
+            markInvalid('#firstName');
+        }
+        if (!/^[A-Za-z][A-Za-z\s'-]{1,}$/.test(lastName)) {
+            errors.push('Last name must be at least 2 characters.');
+            markInvalid('#lastName');
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.push('Please enter a valid email address.');
+            markInvalid('#email');
+        }
+        if (!/^[A-Za-z0-9]{7,9}$/.test(passport)) {
+            errors.push('Please enter a valid passport number (7–9 alphanumeric).');
+            markInvalid('#passport');
+        }
+        if (isNaN(baggage) || baggage < 0) {
+            errors.push('Baggage must be 0 or a positive whole number.');
+            markInvalid('#baggage');
+        }
+        if (!seat) {
+            errors.push('Please select a seat.');
+        }
+
+        if (errors.length) {
+            $msg.html(`<div class="alert alert-danger" role="alert">${errors.join('<br>')}</div>`);
+            return;
+        }
+
+        const currentUserId = user?._id;
+
+        const reservationData = {
+            flightId: flightId,
+            userId: currentUserId,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            passport: passport,
+            seat: seat,
+            mealOption: {
+                label: mealLabel,
+                price: mealPrice
+            },
+            baggage: baggage
+        };
+
+        fetch('/reservations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reservationData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message)
+                    });
+                }
+                return response.json();
+            })
+            .then(savedReservation => {
+                const bill = savedReservation.bill;
+                const resId = savedReservation._id; // Get new reservation ID
+
+                $("#sumPassenger").text(`Name: ${savedReservation.firstName} ${savedReservation.lastName}`); $("#sumContact").text(`Email: ${savedReservation.email}`);
+                $("#sumPassport").text(`Passport: ${savedReservation.passport}`);
+                $("#sumSeat").text(`Seat: ${savedReservation.seat.code} ${savedReservation.seat.isPremium ? '(Premium Row)' : ''}`);
+                $("#sumMeal").text(`Meal: ${savedReservation.meal.label}`);
+                $("#sumBaggage").text(`Extra Baggage: ${savedReservation.baggage.kg} kg`);
+
+                $("#sumBaseFare").text(fmt(bill.baseFare));
+                $("#sumSeatFee").text(fmt(bill.seatFee));
+                $("#sumMealFee").text(fmt(bill.mealFee));
+                $("#sumBaggageFee").text(fmt(bill.baggageFee));
+                $("#sumSubtotal").text(fmt(bill.subtotal));
+                $("#sumTax").text(fmt(bill.tax));
+                $("#sumTotal").text(fmt(bill.total));
+
+                // Show modal
+                const billModal = new bootstrap.Modal(document.getElementById('billModal'));
+                billModal.show();
+
+                // Confirmation handler
+                $("#confirmBooking").off('click').on('click', function () {
+                    billModal.hide();
+                    $msg.html('<div class="alert alert-success" role="alert">Reservation submitted successfully! Payment confirmed. Redirecting...</div>');
+
+                    $form[0].reset();
+                    $seatDisplay.val('');
+                    $seatValue.val('');
+                    $seatGrid.find('.seat-btn.active').removeClass('active');
+
+                    // Redirect to the reservation details page
+                    const userIdParam = user?._id ? `?userId=${user._id}` : '';
+                    setTimeout(() => {
+                        window.location.href = `/reservations/${resId}${userIdParam}`;
+                    }, 1000);
+                });
+            })
+            .catch(error => {
+                $msg.html(`<div class="alert alert-danger" role="alert">Error: ${error.message}</div>`);
+            });
+    });
+
+    function fmt(n) {
+        return `$${Number(n).toFixed(2)}`;
+    }
+
+    function markInvalid(selector) {
+        $(selector).addClass('is-invalid');
+    }
+
+    function clearErrors() {
+        $form.find('.is-invalid').removeClass('is-invalid');
+    }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const user = {{{ json user }}};
+    // Make user available in the scope of the main jQuery function
+    window.user = user;
+    console.log("SESSION USER:", user);
+
+    const resLink = document.querySelector('a.nav-link[href="/reservations"]');
+    if (resLink && user) {
+        if (user.role === "Admin") {
+            resLink.href = "/reservations";
+        } else {
+            resLink.href = `/reservations?userId=${user._id}`;
+        }
+    }
+        });
+</script>
+
+</html>

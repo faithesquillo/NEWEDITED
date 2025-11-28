@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Reservations</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/reservation-list-style.css">
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+    
+  <nav class="navbar sticky-top glass-nav">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">
+        {{#if user.role}}
+        {{#ifEquals user.role "Admin"}}
+        Online Airline Ticketing System - Admin
+        {{else}}
+        Online Airline Ticketing System
+        {{/ifEquals}}
+        {{else}}
+        Online Airline Ticketing System
+        {{/if}}
+      </span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          {{#if user.role}}
+          {{#ifEquals user.role "Admin"}}
+          <li class="nav-item"><a class="nav-link" href="/adminSearchPage">Search & Manage Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userManagement">User Management</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations List</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+          {{else ifEquals user.role "User"}}
+          <li class="nav-item"><a class="nav-link" href="/searchPage">Search Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/checkin">Online Check-in</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+          {{/ifEquals}}
+          {{else}}
+          <li class="nav-item"><a class="nav-link active" href="/searchPage">Search Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/signup">Create Account</a></li>
+          {{/if}}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container py-5">
+    <h2 class="text-center mb-4">My Bookings</h2>
+
+    <div class="d-flex flex-column align-items-center">
+      {{#if reservations.length}}
+      {{#each reservations}}
+      <div class="glass-card mb-4 p-4 col-12 col-md-8">
+
+        <!-- Main Info -->
+        <div class="card-main">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-0 fw-bold">{{flightId.airline}}</h5>
+              <p class="text-muted mb-1">{{flightId.flightNumber}}</p>
+              <p class="mt-2 text-muted">{{formatDate flightId.schedule}}</p>
+            </div>
+          </div>
+
+          <div class="flight-route d-flex justify-content-between align-items-center">
+            <div>
+              <p class="mb-1"><strong>{{flightId.origin}}</strong></p>
+            </div>
+            <div class="arrow text-center flex-grow-1">
+              <p class="mb-1"> ——————————→ </p>
+            </div>
+            <div class="text-end">
+              <p class="mb-1"><strong>{{flightId.destination}}</strong></p>
+              <p class="text-muted mb-0">{{arrivalTime}}</p>
+            </div>
+          </div>
+
+        <h6 class="fw-bold mb-0 mt-2">Passenger:<br> {{firstName}} {{lastName}}</h6>
+          <p class="text-muted mb-0"><strong>Status:</strong> {{status}}</p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="text-center mt-3">
+          <a href="/reservations/{{_id}}?userId={{../userId}}" class="btn btn-primary me-2">View Details</a>
+
+          {{#ifCond status '!=' 'cancelled'}}
+          <form action="/reservations/{{_id}}/cancel?userId={{../userId}}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-danger">Cancel</button>
+          </form>
+          {{else}}
+          <button class="btn btn-secondary" disabled>Cancelled</button>
+          {{/ifCond}}
+        </div>
+      </div>
+      {{/each}}
+      {{else}}
+      <p class="text-center text-muted">No bookings yet.</p>
+      {{/if}}
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = {{{ json user }}};
+  console.log("SESSION USER:", user);
+
+  const resLink = document.querySelector('a.nav-link[href="/reservations"]');
+  if (resLink && user) {
+    if (user.role === "Admin") {
+      resLink.href = "/reservations";
+    } else {
+      resLink.href = `/reservations?userId=${user._id}`;
+    }
+  }
+
+  document.querySelectorAll('a[href*="/reservations/"]').forEach(a => {
+    if (user && user.role !== "Admin") {
+      const url = new URL(a.href, window.location.origin);
+      url.searchParams.set('userId', user._id);
+      a.href = url.toString();
+    }
+  });
+  document.querySelectorAll('form[action*="/reservations/"]').forEach(form => {
+    if (user && user.role !== "Admin") {
+      const url = new URL(form.action, window.location.origin);
+      url.searchParams.set('userId', user._id);
+      form.action = url.toString();
+    }
+  });
+  });
+</script>
+
+</body>
+
+</html>

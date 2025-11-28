@@ -1,0 +1,19 @@
+{
+    "name": "ccapdev-s16-10-mco-mco2-final",
+    "version": "1.0.0",
+    "description": "",
+    "main": "flightsearchQuery.js",
+    "scripts": {
+        "test": "jest",
+        "start": "node server.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^5.1.0",
+        "express-handlebars": "^8.0.3",
+        "mongoose": "^8.19.3"
+    },
+    "type": "commonjs"
+}

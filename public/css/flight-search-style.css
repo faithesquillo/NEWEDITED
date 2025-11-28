@@ -1,0 +1,88 @@
+.glass-nav {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.glass-nav .nav-link {
+  color: #000000;
+}
+
+.glass-nav .nav-link.active {
+  font-weight: 500;
+  color: #FF6F00;
+}
+
+.glass-nav .navbar-brand {
+  color: #000000;
+}
+
+body {
+  background-color: #F4F1EC;
+  font-family: Helvetica, sans-serif;
+}
+
+#carouselExampleSlidesOnly {
+  position: relative;
+}
+
+
+#carouselExampleSlidesOnly .carousel-item img {
+  margin: 0 auto;
+  overflow: hidden;
+  height: 600px;
+  object-fit: cover;
+}
+
+.carousel-caption h1 {
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+  /* Adds shadow for contrast */
+  font-size: 3rem;
+  /* Make the text large */
+  font-weight: bold;
+  z-index: 100;
+}
+
+.flight-search-container {
+  position: relative;
+  z-index: 10;
+  margin-top: -100px;
+  border-radius: 10px;
+  background: #fff;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.trip-type-selector label {
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.trip-type-selector input:checked+label {
+  background-color: #223382;
+  color: white;
+  font-weight: bold;
+}
+
+.flight-card {
+  margin-bottom: 20px;
+  border-left: 5px solid #223382;
+}
+
+.flight-card-details h5 {
+  font-weight: bold;
+  color: #223382;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reservation Details</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/reservation-detail-style.css">
+</head>
+
+<body>
+  <!-- navbar -->
+  <nav id="user-navbar" class="navbar sticky-top glass-nav" style="display:none;">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">Online Airline Ticketing System</span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/searchPage">Search Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/reservations">Reservations</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/checkin">Online Check-in</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main container -->
+  <div class="container py-5">
+    <div class="glass-card mx-auto col-12 col-md-8 p-4">
+
+      <!-- Booking Information -->
+      <h4 class="fw-bold text-center mb-4">Booking Information</h4>
+      <h5 class="text-center mb-4">PNR: {{reservation.pnr}}</h5>
+
+      <div class="text-center mb-3">
+        <h5><i class="bi bi-airplane"></i> {{reservation.flightId.origin}} → {{reservation.flightId.destination}}</h5>
+      </div>
+
+      <hr>
+
+      <!-- Passenger Information -->
+     <h5 class="fw-bold mb-3">Passenger Information</h5>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>Passenger:</strong><br>{{reservation.firstName}} {{reservation.lastName}}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Email:</strong><br>{{reservation.email}}</p>
+        </div>
+      </div>
+      <p><strong>Passport Number:</strong><br>{{reservation.passport}}</p>
+
+      <hr>
+
+      <!-- Departure Information -->
+      <h5 class="fw-bold mb-3">Departure Information</h5>
+      <p><strong>Airline:</strong> {{reservation.flightId.airline}}</p>
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <p><strong>Flight No.:</strong><br>{{reservation.flightId.flightNumber}}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Departure:</strong><br>{{reservation.flightId.origin}}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Departure Date:</strong><br>{{formatDate reservation.flightId.schedule}} {{formatTime
+            reservation.flightId.schedule}}</p>
+        </div>
+      </div>
+
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <p><strong>Seat:</strong><br>{{reservation.seat.code}}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Arrival:</strong><br>{{reservation.flightId.destination}}</p>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Additional Details -->
+      <h5 class="fw-bold mb-3">Additional Details</h5>
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <p><strong>Meal:</strong><br>{{reservation.meal.label}}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Baggage:</strong><br>{{reservation.baggage.kg}} kg</p>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Booking Status -->
+      <h5 class="fw-bold mb-3">Booking Status</h5>
+      <p>
+        <strong>Status:</strong>
+        <span class="{{#ifCond reservation.status '==' 'booked'}}text-success{{else}}text-danger{{/ifCond}}">
+          {{reservation.status}}
+        </span>
+      </p>
+
+      <div class="text-center mt-4">
+        {{#if user._id}}
+        <a href="/reservations?userId={{user._id}}" class="btn btn-secondary me-2">Back to List</a>
+        {{else}}
+        <a href="/reservations" class="btn btn-secondary me-2">Back to List</a>
+        {{/if}}
+      
+        {{#ifCond reservation.status '!=' 'cancelled'}}
+      
+        <a href="/reservations/{{reservation._id}}/edit?userId={{user._id}}" class="btn btn-primary me-2">Edit Booking</a>
+        <form action="/reservations/{{reservation._id}}/cancel?userId={{user._id}}" method="POST" style="display:inline;">
+          <button type="submit" class="btn btn-danger">Cancel</button>
+        </form>
+        {{else}}
+        <a href="#" class="btn btn-primary me-2 disabled" aria-disabled="true">Edit Booking</a>
+        <button class="btn btn-secondary" disabled>Cancelled</button>
+        {{/ifCond}}
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+</body>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const resLink = document.querySelector('a.nav-link[href="/reservations"]');
+    const navbarList = document.querySelector('.navbar-nav');
+    const navbarBrand = document.querySelector('.navbar-brand');
+
+    const user = {
+      _id: "{{userId}}", 
+      role: "{{user.role}}" 
+    };
+
+    if (user.role === "Admin") {
+      if (navbarBrand) {
+        navbarBrand.textContent = 'Online Airline Ticketing System - Admin';
+      }
+      if (navbarList) {
+        navbarList.innerHTML = `
+          <li class="nav-item"><a class="nav-link" href="/adminSearchPage">Search & Manage Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userManagement">User Management</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations List</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+        `;
+      }
+      // Ensure Reservations link works for Admin
+      if (resLink) resLink.href = "/reservations";
+    } else if (user._id) { // Use injected user ID
+      // Sets reservation link to user's reservations
+      if (resLink) resLink.href = `/reservations?userId=${user._id}`;
+    }
+  });
+</script>
+
+</html>
+

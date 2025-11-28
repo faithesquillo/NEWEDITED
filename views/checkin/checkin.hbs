@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}}</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" href="/static/css/checkin-style.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav id="user-navbar" class="navbar sticky-top glass-nav" style="display:none;">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">Online Airline Ticketing System</span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/searchPage">Search Flights</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/checkin">Online Check-in</a></li>
+          <li class="nav-item"><a class="nav-link" href="/reservations">Reservations</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main container -->
+  <div class="container py-5">
+    <div class="glass-card mx-auto col-12 col-md-6 p-4">
+      <h3 class="fw-bold text-center mb-4">Online Check-in</h3>
+      <p class="text-center mb-4">Welcome! Get checked in.</p>
+
+      <!-- Check-In Form -->
+      <form id="checkinForm">
+        <div class="mb-3">
+          <label class="form-label"><strong>PNR Code</strong></label>
+          <input type="text" class="form-control" id="pnrInput" placeholder="Enter 6-character PNR" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Last Name</strong></label>
+          <input type="text" class="form-control" id="lastNameInput" placeholder="Enter last name" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Check In</button>
+      </form>
+
+      <!-- Success-->
+      <div id="resultBox" class="alert alert-success mt-4 d-none text-center">
+        <h5 class="fw-bold">Check-in Successful!</h5>
+        <p id="bpText"></p>
+        <p id="seatText"></p>
+      </div>
+
+      <!-- Error -->
+      <div id="errorBox" class="alert alert-danger mt-4 d-none text-center"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("user-navbar").style.display = "block";
+    });
+
+    document.getElementById("checkinForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const pnr = document.getElementById("pnrInput").value.trim();
+      const lastName = document.getElementById("lastNameInput").value.trim();
+
+      const response = await fetch('/checkin', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pnr, lastName })
+      });
+
+      const data = await response.json();
+
+      const resultBox = document.getElementById("resultBox");
+      const errorBox = document.getElementById("errorBox");
+
+      resultBox.classList.add("d-none");
+      errorBox.classList.add("d-none");
+
+      if (data.success) {
+        resultBox.classList.remove("d-none");
+        document.getElementById("bpText").innerHTML = "Boarding Pass Number: <strong>" + data.boardingPass + "</strong>";
+        document.getElementById("seatText").innerHTML = "Seat Assigned: <strong>" + data.seat + "</strong>";
+      } else {
+        errorBox.classList.remove("d-none");
+        errorBox.innerText = data.message;
+      }
+    });
+  </script>
+</body>
+
+</html>
+

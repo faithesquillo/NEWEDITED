@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Airline Ticketing System</title>
+  <link rel="stylesheet" href="/static/css/flight-search-style.css">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+
+  <nav class="navbar sticky-top glass-nav">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">
+        {{#if user.role}}
+        {{#ifEquals user.role "Admin"}}
+        Online Airline Ticketing System - Admin
+        {{else}}
+        Online Airline Ticketing System
+        {{/ifEquals}}
+        {{else}}
+        Online Airline Ticketing System
+        {{/if}}
+      </span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          {{#if user.role}}
+          {{#ifEquals user.role "Admin"}}
+          <li class="nav-item"><a class="nav-link active" href="/adminSearchPage">Search & Manage Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userManagement">User Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="/reservations">Reservations List</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+          {{else ifEquals user.role "User"}}
+          <li class="nav-item"><a class="nav-link active" href="/searchPage">Search Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/checkin">Online Check-in</a></li>
+          <li class="nav-item"><a class="nav-link" href="/reservations">Reservations</a></li>
+          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+          {{/ifEquals}}
+          {{else}}
+          <li class="nav-item"><a class="nav-link active" href="/searchPage">Search Flights</a></li>
+          <li class="nav-item"><a class="nav-link" href="/signup">Create Account</a></li>
+          {{/if}}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="carouselExampleSlidesOnly" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item">
+        <img src="https://cdn.pixabay.com/photo/2022/11/13/07/43/lantern-7588473_1280.jpg" class="d-block w-100"
+          alt="First slide">
+        <div class="carousel-caption">
+          <h1>Your journey begins here.</h1>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="https://cdn.pixabay.com/photo/2017/08/31/09/40/singapore-2699987_1280.jpg" class="d-block w-100"
+          alt="Second slide">
+        <div class="carousel-caption">
+          <h1>Your journey begins here.</h1>
+        </div>
+      </div>
+      <div class="carousel-item active">
+        <img src="https://images.pexels.com/photos/1694621/pexels-photo-1694621.jpeg" class="d-block w-100"
+          alt="Third slide">
+        <div class="carousel-caption">
+          <h1>Your journey begins here.</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mb-5 mt-0">
+    <h1 class="text-center fw-bold mb-4" style="color:#333;">Your journey begins here.</h1>
+    <div class="flight-search-container">
+      <form id="flightSearchForm" class="row g-3">
+
+        <div class="col-12 mb-4 trip-type-selector">
+          <input type="radio" class="btn-check" name="tripType" id="roundTrip" autocomplete="off" checked>
+          <label class="btn btn-outline-primary" for="roundTrip">Round Trip</label>
+
+          <input type="radio" class="btn-check" name="tripType" id="oneWay" autocomplete="off">
+          <label class="btn btn-outline-primary" for="oneWay">One Way</label>
+
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <label for="origin" class="form-label">Departure City *</label>
+            <select class="form-select" id="origin" required>
+              <option value="">Select departure city</option>
+              {{#each cities}}
+              <option value="{{code}}">{{name}} ({{code}})</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label for="destination" class="form-label">Destination City *</label>
+            <select class="form-select" id="destination" required>
+              <option value="">Select destination city</option>
+              {{#each cities}}
+              <option value="{{code}}">{{name}} ({{code}})</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label for="departureDate" class="form-label">Departure *</label>
+            <input type="date" class="form-control" id="departureDate" required>
+          </div>
+
+          <div class="col-md-3" id="returnDateContainer">
+            <label for="returnDate" class="form-label">Return *</label>
+            <input type="date" class="form-control" id="returnDate" required>
+          </div>
+        </div>
+
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label for="cabinClass" class="form-label">Class *</label>
+            <select id="cabinClass" class="form-select" required>
+              <option value="economy">Economy Class</option>
+              <option value="premium">Premium Economy</option>
+              <option value="business">Business Class</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label for="passengerCount" class="form-label">Adults (12+) *</label>
+            <input type="number" class="form-control" id="passengerCount" min="1" value="1" required>
+          </div>
+
+          <div class="col-md-3">
+            <label for="passengerCount" class="form-label">Children (2-11) *</label>
+            <input type="number" class="form-control" id="passengerCount" min="0" value="0" required>
+          </div>
+
+          <div class="col-md-3">
+            <label for="passengerCount" class="form-label">Infants (below 2) *</label>
+            <input type="number" class="form-control" id="passengerCount" min="0" value="0" required>
+          </div>
+        </div>
+
+        <div class="row g-3 w-100">
+          <div class="col-12 d-flex justify-content-end mt-3">
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-success w-100">Search and Book</button>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <h2 class="mt-5 mb-3">Available Flights</h2>
+    <div id="flightResults" class="row">
+      <p class="text-muted">Select your trip details and click Search to see static flight results.</p>
+    </div>
+
+  </div>
+
+  <div class="container my-5">
+    <h2 class="text-center mb-4">Explore Other Countries</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      {{#each exploreCountries}}
+      <div class="col">
+        <div class="card h-100 glass-card">
+          <img src="{{image_url}}" class="card-img-top" alt="{{title}}">
+          <div class="card-body">
+            <h5 class="card-title">{{title}}</h5>
+            <p class="card-text">{{description}}</p>
+          </div>
+          <div class="card-footer">
+            <small class="text-muted">Last updated 3 mins ago</small>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="static/js/flightsearchQuery.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const user = {{{ json user }}};
+      console.log("SESSION USER:", user);
+      });
+    </script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const today = new Date();
+
+        const yyyy = today.getFullYear();
+      
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const minDate = `${yyyy}-${mm}-${dd}`;
+
+        const departureDateInput = document.getElementById('departureDate');
+        const returnDateInput = document.getElementById('returnDate');
+
+        
+        if (departureDateInput) {
+            departureDateInput.min = minDate;
+        }
+        if (returnDateInput) {
+            returnDateInput.min = minDate;
+        }
+
+        
+        if (departureDateInput && returnDateInput) {
+            departureDateInput.addEventListener('change', () => {
+  
+                const newMin = departureDateInput.value || minDate;
+                returnDateInput.min = newMin;
+                if (returnDateInput.value < newMin) {
+                    returnDateInput.value = newMin; 
+                }
+            });
+        }
+    });
+  </script>
+
+</body>
+
+
+</html>

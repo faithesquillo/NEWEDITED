@@ -1,0 +1,146 @@
+:root {
+    --luster-white: #F4F1EC;
+    --aster-blue: #9BACD8;
+    --habanero: #F98513;
+    --jodhpur-tan: #DAD1C8;
+    --deep-space: #223382;
+    --deadly-depths: #111144;
+}
+
+/* ===== BASE STYLES ===== */
+body {
+    color: var(--luster-white);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Helvetica', sans-serif;
+    margin: 0;
+}
+
+a {
+    color: var(--aster-blue);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.glass-nav {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.glass-nav .nav-link {
+    color: #000000;
+}
+
+.glass-nav .nav-link.active {
+    font-weight: 500;
+    color: #FF6F00;
+}
+
+.glass-nav .navbar-brand {
+    color: #000000;
+}
+
+/* ===== CARD STYLES ===== */
+.glass-card {
+    background: rgba(244, 241, 236, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ===== BUTTONS ===== */
+.btn-success {
+    background-color: var(--habanero);
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #e07a10;
+}
+
+.btn-outline-light {
+    border-color: var(--aster-blue);
+    color: var(--aster-blue);
+}
+
+.btn-outline-light:hover {
+    background-color: var(--aster-blue);
+    color: var(--deadly-depths);
+}
+
+/* ===== PROFILE ===== */
+.profile-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.profile-header img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid var(--aster-blue);
+}
+
+.profile-header h4 {
+    margin-top: 15px;
+    color: var(--luster-white);
+}
+
+.profile-details p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
+.profile-details strong {
+    color: var(--aster-blue);
+}
+
+/* ===== MODALS ===== */
+.modal-content {
+    background: rgba(17, 17, 68, 0.95);
+    color: var(--luster-white);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== ADMIN DASHBOARD ===== */
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.dashboard-header h2 {
+    color: var(--luster-white);
+}
+
+.dashboard-header p {
+    color: var(--jodhpur-tan);
+}
+
+.glass-card.table-card {
+    max-width: 1000px;
+    width: 90%;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+th {
+    color: var(--aster-blue);
+}

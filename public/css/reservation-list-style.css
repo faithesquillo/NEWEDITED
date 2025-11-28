@@ -1,0 +1,105 @@
+body {
+  background: linear-gradient(135deg, #f4f1ec 0%, #dad1c8 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: Helvetica;
+  color: #333;
+}
+
+h2 {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Navigation bar */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.glass-nav .nav-link {
+  color: #000000;
+}
+
+.glass-nav .nav-link.active {
+  font-weight: 500;
+  color: #FF6F00;
+}
+
+.glass-nav .navbar-brand {
+  color: #000000;
+}
+
+
+/*  Glass cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 30px;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Card main content layout */
+.card-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.flight-info p,
+.passenger-info p {
+  margin: 0;
+  color: #333;
+}
+
+.flight-number {
+  font-weight: 600;
+}
+
+.passenger-name {
+  font-weight: 600;
+}
+
+.status {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.divider {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn-glass {
+  background-color: #FF6F00;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-glass:hover {
+  background-color: #e65c00;
+  color: white;
+}
+
+/* Expanded details*/
+.expanded-details p {
+  margin-bottom: 6px;
+  color: #444;
+}

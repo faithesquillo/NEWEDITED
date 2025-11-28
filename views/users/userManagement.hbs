@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management System</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-nav .nav-link {
+            color: #000;
+        }
+
+        .glass-nav .nav-link.active {
+            color: #ff6f00;
+            font-weight: 500;
+        }
+
+        .glass-nav .navbar-brand {
+            color: #000;
+        }
+
+        body {
+            font-family: Helvetica, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        header .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        header .header-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background-color: #004d99;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar sticky-top glass-nav">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Online Airline Ticketing System - Admin</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="/adminSearchPage">Search & Manage Flights</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/userManagement">User Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/reservations">Reservations List</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="position-relative">
+        <img src="https://images.unsplash.com/photo-1695741408200-b0de8913396e?q=80&w=2070&auto=format&fit=crop"
+            alt="Dashboard Header" />
+        <div class="overlay"></div>
+        <div class="header-text">
+            <h1 class="fw-bold">User Management</h1>
+            <p class="lead">Admin Dashboard</p>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Registered Users</h2>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                {{#each users}}
+                <tr data-user-id="{{this._id}}">
+                    <td>{{@index}}</td>
+                    <td>{{this.firstName}}</td>
+                    <td>{{this.lastName}}</td>
+                    <td>{{this.email}}</td>
+                    <td>{{this.role}}</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm edit-btn">Edit</button>
+                        <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <label>First Name</label>
+                        <input type="text" class="form-control mb-2" id="addFirstName" placeholder="Enter first name">
+
+                        <label>Last Name</label>
+                        <input type="text" class="form-control mb-2" id="addLastName" placeholder="Enter last name">
+
+                        <label>Email</label>
+                        <input type="email" class="form-control mb-2" id="addEmail" placeholder="Enter email">
+
+                        <label>Role</label>
+                        <select class="form-control mb-2" id="addRole">
+                            <option>User</option>
+                            <option>Admin</option>
+                        </select>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success w-100" id="saveUserBtn">Save User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+
+                        <label>First Name</label>
+                        <input type="text" class="form-control mb-2" id="editFirstName">
+
+                        <label>Last Name</label>
+                        <input type="text" class="form-control mb-2" id="editLastName">
+
+                        <label>Email</label>
+                        <input type="email" class="form-control mb-2" id="editEmail">
+
+                        <label>Role</label>
+                        <select class="form-control mb-2" id="editRole">
+                            <option>User</option>
+                            <option>Admin</option>
+                        </select>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-warning w-100" id="updateUserBtn">Update User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const userTable = document.querySelector("table tbody");
+            const saveUserBtn = document.querySelector("#saveUserBtn");
+            const updateUserBtn = document.querySelector("#updateUserBtn");
+
+            const addFirstName = document.querySelector("#addFirstName");
+            const addLastName = document.querySelector("#addLastName");
+            const addEmail = document.querySelector("#addEmail");
+            const addRole = document.querySelector("#addRole");
+
+            const editFirstName = document.querySelector("#editFirstName");
+            const editLastName = document.querySelector("#editLastName");
+            const editEmail = document.querySelector("#editEmail");
+            const editRole = document.querySelector("#editRole");
+            const editUserId = document.querySelector("#editUserId");
+
+            let currentUserId = null;
+
+            saveUserBtn.addEventListener("click", async () => {
+                const firstName = addFirstName.value.trim();
+                const lastName = addLastName.value.trim();
+                const email = addEmail.value.trim();
+                const role = addRole.value;
+
+                if (!firstName || !lastName || !email) {
+                    alert("Please fill in all fields before saving.");
+                    return;
+                }
+
+                const response = await fetch("/users/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ firstName, lastName, email, role })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    const newUser = data.user;
+
+                    const newRow = document.createElement("tr");
+                    newRow.setAttribute("data-user-id", newUser.id);
+                    newRow.innerHTML = `
+                    <td>${userTable.children.length + 1}</td>
+                    <td>${newUser.firstName}</td>
+                    <td>${newUser.lastName}</td>
+                    <td>${newUser.email}</td>
+                    <td>${newUser.role}</td>
+                    <td class="text-center">
+                    <button class="btn btn-warning btn-sm edit-btn">Edit</button>
+                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                    </td>
+                    `;
+
+                    userTable.appendChild(newRow);
+
+                    addFirstName.value = "";
+                    addLastName.value = "";
+                    addEmail.value = "";
+                    addRole.selectedIndex = 0;
+
+                    bootstrap.Modal.getInstance(document.querySelector("#addUserModal")).hide();
+                } else {
+                    alert(data.message || "Error adding user.");
+                }
+            });
+
+            userTable.addEventListener("click", async (e) => {
+                const row = e.target.closest("tr");
+                if (!row) return;
+
+                const userId = row.getAttribute("data-user-id");
+
+                if (e.target.classList.contains("edit-btn")) {
+                    currentUserId = userId;
+                    const response = await fetch(`/users/${userId}`);
+                    const user = await response.json();
+
+                    if (!response.ok) {
+                        alert("Error fetching user data.");
+                        return;
+                    }
+
+                    editUserId.value = user._id;
+                    editFirstName.value = user.firstName || "";
+                    editLastName.value = user.lastName || "";
+                    editEmail.value = user.email || "";
+                    editRole.value = user.role || "User";
+
+                    new bootstrap.Modal(document.querySelector("#editUserModal")).show();
+                }
+
+                if (e.target.classList.contains("delete-btn")) {
+                    if (confirm(`Are you sure you want to delete ${row.children[1].textContent}?`)) {
+                        const response = await fetch(`/users/${userId}`, { method: "DELETE" });
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            row.remove();
+                        } else {
+                            alert(result.message || "Failed to delete user.");
+                        }
+                    }
+                }
+            });
+
+            updateUserBtn.addEventListener("click", async () => {
+                if (!currentUserId) return;
+
+                const updatedUser = {
+                    firstName: editFirstName.value.trim(),
+                    lastName: editLastName.value.trim(),
+                    email: editEmail.value.trim(),
+                    role: editRole.value
+                };
+
+                const response = await fetch(`/users/${currentUserId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedUser)
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    const row = userTable.querySelector(`tr[data-user-id="${currentUserId}"]`);
+                    if (row) {
+                        row.children[1].textContent = `${updatedUser.firstName} ${updatedUser.lastName}`;
+                        row.children[2].textContent = updatedUser.email;
+                    }
+
+                    bootstrap.Modal.getInstance(document.querySelector("#editUserModal")).hide();
+                } else {
+                    alert(data.message || "Failed to update user.");
+                }
+            });
+        });
+    </script>
+
+<script>
+    const user = {{{ userJSON }}};
+    const resLink = document.querySelector('a.nav-link[href="/reservations"]');
+    if (resLink && user) {
+        if (user.role === "Admin") {
+            resLink.href = "/reservations";
+        } else {
+            resLink.href = `/reservations?userId=${user._id}`;
+        }
+    }
+</script>
+</body>
+</html>

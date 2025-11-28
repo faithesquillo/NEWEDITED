@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Reservation</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/reservation-detail-style.css">
+
+    <style>
+        .glass-card {
+            max-width: 600px;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .seat-btn {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            font-size: .65rem;
+            line-height: 1;
+            text-align: center;
+        }
+
+        .aisle {
+            width: 10px;
+        }
+
+        .row-chip {
+            width: 22px;
+            text-align: right;
+            font-size: .65rem;
+            color: #6c757d;
+        }
+
+        .seat-row {
+            margin-bottom: 2px;
+        }
+
+        .modal-seat-body {
+            max-height: 340px;
+            overflow: auto;
+        }
+
+        .legend .swatch {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            border-radius: .25rem;
+            border: 1px solid rgba(0, 0, 0, .1);
+            margin-right: .35rem;
+            vertical-align: middle;
+        }
+
+        .swatch-available {
+            background: var(--bs-body-bg);
+        }
+
+        .swatch-selected {
+            background: var(--bs-primary);
+        }
+
+        .swatch-occupied {
+            background: var(--bs-secondary);
+            opacity: .5;
+        }
+
+        .swatch-premium {
+            background: var(--bs-warning);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar sticky-top glass-nav">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Online Airline Ticketing System</span>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="glass-card mx-auto col-12 col-md-8 p-4">
+            <h4 class="fw-bold text-center mb-4">Edit Booking</h4>
+
+            <div class="text-center mb-3">
+                <h5>{{reservation.flightId.origin}} &rarr; {{reservation.flightId.destination}}</h5>
+                <p class="text-muted">
+                    Passenger: {{reservation.firstName}} {{reservation.lastName}} |
+                    Flight: {{reservation.flightId.flightNumber}}
+                </p>
+            </div>
+            <hr>
+
+            <div id="editReservationForm">
+                <input type="hidden" id="reservationId" value="{{reservation._id}}">
+
+                <div class="mb-3">
+                    <label class="form-label">Seat Selection</label>
+                    <div class="input-group">
+                        <input id="seatDisplay" class="form-control" type="text" value="{{reservation.seat.code}}"
+                            placeholder="No seat selected" readonly>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#seatModal">Choose Seat</button>
+                    </div>
+                    <input type="hidden" id="seatValue" name="seat" value="{{reservation.seat.code}}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="mealOption">Meal Options</label>
+                    <select class="form-select" id="mealOption">
+                        <option value="0" data-label="None">None - $0</option>
+                        <option value="10" data-label="Standard">Standard - $10</option>
+                        <option value="20" data-label="Vegetarian">Vegetarian - $20</option>
+                        <option value="30" data-label="Kosher">Kosher - $30</option>
+                        <option value="40" data-label="Halal">Halal - $40</option>
+                        <option value="50" data-label="Diabetic">Diabetic - $50</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="baggage">Extra Baggage (kg)</label>
+                    <input type="number" id="baggage" class="form-control" value="{{reservation.baggage.kg}}" min="0"
+                        step="1">
+                </div>
+
+                <button type="button" id="saveChangesBtn" class="btn btn-primary w-100">Save Changes</button>
+                <a href="/reservations/{{reservation._id}}?userId={{user._id}}"
+                    class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+            </div>
+
+            <div id="formMessage" class="mt-3"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upgrade Payment Required</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your changes have resulted in an additional charge:</p>
+                    <h3 class="text-center fw-bold" id="amountDueDisplay">$0.00</h3>
+                    <p class="text-muted small">This amount will be charged to your card on file. Click "Confirm & Pay"
+                        to proceed.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel
+                        Change</button>
+                    <button type="button" class="btn btn-primary" id="confirmPaymentBtn">Confirm & Pay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="seatModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title" id="seatModalLabel">A320 Seat Selection</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body modal-seat-body">
+                    <div class="legend small d-flex flex-wrap gap-3 mb-2">
+                        <span><span class="swatch swatch-available"></span>Available</span>
+                        <span><span class="swatch swatch-selected"></span>Selected</span>
+                        <span><span class="swatch swatch-occupied"></span>Occupied</span>
+                        <span><span class="swatch swatch-premium"></span>Premium</span>
+                    </div>
+                    <div id="seatGrid" class="d-flex flex-column"></div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" id="clearSeats" class="btn btn-outline-secondary btn-sm">Clear</button>
+                    <button type="button" id="applySeats" class="btn btn-primary btn-sm"
+                        data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(function () {
+            const TOTAL_ROWS = 30;
+            const PREMIUM_ROWS = new Set([1, 2, 3, 4]);
+
+            const occupiedSeatsList = {{{ occupiedSeats }}} || [];
+        const OCCUPIED = new Set(occupiedSeatsList);
+
+        const LETTERS = ["A", "B", "C", "D", "E", "F"];
+
+        const $seatGrid = $("#seatGrid");
+        const $seatDisplay = $("#seatDisplay");
+        const $seatValue = $("#seatValue");
+
+        function buildSeatGrid() {
+            $seatGrid.empty();
+            for (let r = 1; r <= TOTAL_ROWS; r++) {
+                const $row = $('<div class="d-flex align-items-center seat-row"></div>');
+                $row.append($('<div class="row-chip"></div>').text(r));
+                const $left = $('<div class="d-flex gap-1"></div>');
+                for (let i = 0; i < 3; i++) $left.append(makeSeatBtn(`${r}${LETTERS[i]}`, r));
+                $row.append($left);
+                $row.append($('<div class="aisle"></div>'));
+                const $right = $('<div class="d-flex gap-1"></div>');
+                for (let i = 3; i < 6; i++) $right.append(makeSeatBtn(`${r}${LETTERS[i]}`, r));
+                $row.append($right);
+                $seatGrid.append($row);
+            }
+        }
+        function makeSeatBtn(code, rowNum) {
+            const premium = PREMIUM_ROWS.has(rowNum);
+            const baseCls = premium ? 'btn-outline-warning' : 'btn-outline-primary';
+            const $btn = $(`<button type="button" class="btn btn-sm seat-btn ${baseCls}" data-seat="${code}">${code.slice(-1)}</button>`);
+
+            const currentSeat = $seatValue.val();
+
+            if (OCCUPIED.has(code) && code !== currentSeat) {
+                $btn.removeClass('btn-outline-primary btn-outline-warning')
+                    .addClass('btn-outline-secondary')
+                    .prop('disabled', true)
+                    .attr('aria-disabled', 'true');
+            }
+            return $btn;
+        }
+        $(document).on('click', '.seat-btn', function () {
+            const $btn = $(this);
+            if ($btn.prop('disabled')) return;
+            $seatGrid.find('.seat-btn.active').removeClass('active');
+            $btn.addClass('active');
+        });
+        $("#clearSeats").on('click', () => {
+            $seatGrid.find('.seat-btn.active').removeClass('active');
+        });
+        $("#applySeats").on('click', () => {
+            const $active = $seatGrid.find('.seat-btn.active').first();
+            const seat = $active.length ? $active.data('seat') : '';
+            $seatDisplay.val(seat);
+            $seatValue.val(seat);
+        });
+
+        const seatModalEl = document.getElementById('seatModal');
+        seatModalEl.addEventListener('show.bs.modal', () => {
+            if (!$seatGrid.children().length) {
+                buildSeatGrid();
+            }
+            const currentSeat = $seatValue.val();
+            if (currentSeat) {
+                $seatGrid.find('.seat-btn.active').removeClass('active');
+                $seatGrid.find(`.seat-btn[data-seat="${currentSeat}"]`).addClass('active');
+            }
+        });
+
+        const currentMealPrice = "{{reservation.meal.price}}";
+        $('#mealOption').val(currentMealPrice);
+
+        $('#saveChangesBtn').on('click', function (e) {
+            e.preventDefault();
+            $('#formMessage').empty();
+
+            const reservationId = $('#reservationId').val();
+            const $selectedMeal = $('#mealOption option:selected');
+
+            const data = {
+                seat: $('#seatValue').val(),
+                baggage: parseInt($('#baggage').val(), 10),
+                mealOption: {
+                    label: $selectedMeal.data('label'),
+                    price: Number($selectedMeal.val())
+                }
+            };
+
+            fetch(`/reservations/${reservationId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(response => {
+                    if (!response.success) {
+                        throw new Error(response.message || 'Update failed');
+                    }
+
+                    const resId = response.updatedReservation._id;
+                    const amountDue = response.amountDue;
+
+                    if (amountDue > 0) {
+                        const formattedAmount = `$${Number(amountDue).toFixed(2)}`;
+                        $('#amountDueDisplay').text(formattedAmount);
+
+                        const paymentModalEl = document.getElementById('paymentModal');
+                        const paymentModal = new bootstrap.Modal(paymentModalEl);
+
+                        const seatModalEl = document.getElementById('seatModal');
+                        const seatModalInstance = bootstrap.Modal.getInstance(seatModalEl);
+                        if (seatModalInstance && seatModalEl.classList.contains('show')) {
+                            seatModalInstance.hide();
+                        }
+
+                        paymentModal.show();
+
+                        setTimeout(() => {
+                            $('.modal-backdrop').last().css('z-index', 1055);
+                        }, 50);
+
+                        $('#confirmPaymentBtn').off('click').on('click', function () {
+                            paymentModal.hide();
+                            $('#formMessage').html('<div class="alert alert-success">Payment successful! Booking updated.</div>');
+                            setTimeout(() => {
+                                window.location.href = `/reservations/${resId}?userId={{userId}}`;
+                            }, 1000);
+                        });
+
+                    } else {
+                        $('#formMessage').html('<div class="alert alert-success">Booking updated successfully!</div>');
+                        setTimeout(() => {
+                            window.location.href = `/reservations/${resId}?userId={{userId}}`;
+                        }, 1000);
+                    }
+                })
+                .catch(err => {
+                    $('#formMessage').html(`<div class="alert alert-danger">${err.message}</div>`);
+                });
+        });
+    });
+    </script>
+</body>
+
+</html>
