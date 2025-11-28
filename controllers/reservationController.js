@@ -301,10 +301,11 @@ exports.cancelReservation = async (req, res) => {
         }
 
         const userId = req.session.user._id;
-        res.redirect(`/reservations?userId=${userId}`);
+        res.redirect('/reservations');
 
     } catch (err) {
         console.error('Error cancelling reservation:', err);
         res.status(500).send('Error cancelling reservation');
     }
+
 };
