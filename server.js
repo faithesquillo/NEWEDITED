@@ -5,8 +5,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const app = express();
+console.log('Starting server setup.');
 
-// Import
 const authenticateRoutes = require('./routes/authenticateRoutes');
 const flightsRoutes = require('./routes/flightsRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
@@ -119,12 +119,10 @@ const availableFlights = [
     { airline: 'AsianBridge', aircraftType: 'A321', flightNumber: 'AB-444', origin: 'SIN', destination: 'SYD', departure: 'SIN 14:00', arrival: 'SYD 18:45', price: 280.00, date: 'daily', seatCapacity: 200 }
 ];
 
-// ===== Database Connection =====
 mongoose.connect('mongodb://127.0.0.1:27017/flightApp')
   .then(async () => {
     console.log('MongoDB Connected');
 
-    // Check if admin already exists
     const adminExists = await User.findOne({ email: 'admin@gmail.com' });
 
     if (!adminExists) {
@@ -132,7 +130,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/flightApp')
         firstName: 'Admin',
         lastName: 'User',
         email: 'admin@gmail.com',
-        password: 'Admin123', // plain text
+        password: 'Admin123',
         role: 'Admin'
       });
 
@@ -141,12 +139,11 @@ mongoose.connect('mongodb://127.0.0.1:27017/flightApp')
       console.log('Admin user already exists.');
     }
 
-    // Check if cities exist in database
     const cityCount = await City.countDocuments();
     if (cityCount === 0) {
       await City.insertMany(availableCities);
       await Country.insertMany(exploreCountries);
-      console.log(`✓ Seeded ${availableCities.length} cities and ${exploreCountries.length} countries.`);
+      console.log(`Seeded ${availableCities.length} cities and ${exploreCountries.length} countries.`);
     } else {
         console.log(`Cities & Countries already exist (${cityCount} cities). Skipping seed.`);
     }
@@ -167,7 +164,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/flightApp')
                     return today;
                 }
             }
-            return new Date(); // Fallback to current date/time
+            return new Date(); 
         };
 
       const flightsToInsert = availableFlights.map(f => ({
@@ -177,7 +174,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/flightApp')
       }));
 
       await Flight.insertMany(flightsToInsert);
-      console.log(`✓ Seeded ${flightsToInsert.length} available flights into database`);
+      console.log(`Seeded ${flightsToInsert.length} available flights into database`);
     } else {
       console.log(`Flights already exist in database (${flightCount} flights)`);
     }
@@ -185,7 +182,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/flightApp')
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
-// ===== Middlewares =====
+console.log('Registering global middlewares.');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -199,17 +196,22 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24 
     }
 }));
+console.log('Session middleware initialized.');
 
 app.use((req, res, next) => {
+    console.log('Incoming request:', req.method, req.url);
     if (req.session.user) {
         res.locals.user = req.session.user;
+        console.log('User logged in:', req.session.user.email);
     } else {
         res.locals.user = null;
+        console.log('User is guest.');
     }
     next();
 });
 
-app.use('/static', express.static(path.join(__dirname, 'public'))); // static files like CSS/JS/images
+app.use('/static', express.static(path.join(__dirname, 'public')));
+console.log('Static file serving enabled.');
 
 app.engine('hbs', exphbs.engine({
   extname: '.hbs',
@@ -245,17 +247,19 @@ app.engine('hbs', exphbs.engine({
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
+console.log('Handlebars view engine configured.');
 
-// ===== Routes =====
 app.use('/', authenticateRoutes);
 app.use('/flights', flightsRoutes);
 app.use('/reservations', reservationRoutes);
 //app.use('/users', userRoutes);
 app.use('/', checkInRoutes);
+console.log('All route handlers registered.');
 
-// ===== Test Route =====
-app.get('/test', (req, res) => res.send('Server working'));
+app.get('/test', (req, res) => {
+  console.log('Test route accessed. Sending response.');
+  res.send('Server working');
+});
 
-// ===== Server Start =====
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

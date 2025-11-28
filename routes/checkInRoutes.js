@@ -4,6 +4,7 @@ const Reservation = require('../models/Reservation');
 const { generateUniqueBP } = require('../utils/utils');
 
 router.get('/checkin', (req, res) => {
+    console.log('Accessed check-in page.');
     res.render('checkin/checkin'); 
 });
 
@@ -12,6 +13,7 @@ router.post('/checkin', async (req, res) => {
         const { pnr, lastName } = req.body;
 
         if (!pnr || !lastName) {
+            console.log('Check-in failed: Missing fields.');
             return res.status(400).json({
                 success: false,
                 message: "PNR and Last Name are required"
@@ -23,6 +25,7 @@ router.post('/checkin', async (req, res) => {
             .populate('flightId');
 
         if (!reservation) {
+            console.log('Check-in failed: Invalid PNR.');
             return res.status(404).json({
                 success: false,
                 message: "Invalid PNR"
@@ -31,6 +34,7 @@ router.post('/checkin', async (req, res) => {
 
         // compare ln
         if (reservation.lastName.toLowerCase() !== lastName.toLowerCase()) {
+            console.log('Check-in failed: Last name mismatch.');
             return res.status(401).json({
                 success: false,
                 message: "Last name does not match the reservation"
@@ -42,6 +46,7 @@ router.post('/checkin', async (req, res) => {
         const departureTime = new Date(reservation.flightId.schedule);
 
         if (now > departureTime) {
+            console.log('Check-in failed: Flight has already departed.');
             return res.status(400).json({
                 success: false,
                 message: "Check-in failed: This flight has already departed."
@@ -50,6 +55,7 @@ router.post('/checkin', async (req, res) => {
 
         // check if already checked in
         if (reservation.checkedIn) {
+            console.log('Check-in attempt: Already checked in for PNR', pnr);
             return res.status(400).json({
                 success: false,
                 message: "Passenger is already checked in",
@@ -67,6 +73,8 @@ router.post('/checkin', async (req, res) => {
         reservation.checkedIn = true;
         await reservation.save();
 
+        console.log('Check-in successful for PNR:', pnr);
+
         return res.json({
             success: true,
             message: "Check-in successful!",
@@ -78,6 +86,7 @@ router.post('/checkin', async (req, res) => {
 
     } catch (err) {
         console.error("Check-in error:", err);
+        console.error('Server error during check-in process:', err);
         res.status(500).json({
             success: false,
             message: "Server error"

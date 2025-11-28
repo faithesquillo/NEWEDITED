@@ -7,6 +7,7 @@ exports.createFlight = async (req, res) => {
         if (payload.seatCapacity !== undefined) {
             payload.seatCapacity = Number(payload.seatCapacity);
             if (Number.isNaN(payload.seatCapacity) || payload.seatCapacity < 1) {
+                console.log('Flight creation failed: Invalid capacity.');
                 return res.status(400).json({
                     success: false,
                     message: 'Seat capacity must be a positive number.'
@@ -17,6 +18,7 @@ exports.createFlight = async (req, res) => {
         if (payload.seatsAvailable !== undefined) {
             payload.seatsAvailable = Number(payload.seatsAvailable);
             if (Number.isNaN(payload.seatsAvailable) || payload.seatsAvailable < 0) {
+                console.log('Flight creation failed: Invalid seats available count.');
                 return res.status(400).json({
                     success: false,
                     message: 'Seats available must be zero or a positive number.'
@@ -27,6 +29,7 @@ exports.createFlight = async (req, res) => {
         if (payload.price !== undefined) {
             payload.price = Number(payload.price);
             if (Number.isNaN(payload.price) || payload.price < 0) {
+                console.log('Flight creation failed: Invalid price.');
                 return res.status(400).json({
                     success: false,
                     message: 'Price must be a non-negative number.'
@@ -34,13 +37,14 @@ exports.createFlight = async (req, res) => {
             }
         }
 
-        // Ensure seatsAvailable defaults to seatCapacity when not provided
+        // ensure seatsAvailable defaults to seatCapacity when not provided
         if (payload.seatsAvailable === undefined || payload.seatsAvailable === null) {
             payload.seatsAvailable = payload.seatCapacity;
         }
 
         if (payload.seatCapacity !== undefined && payload.seatsAvailable !== undefined) {
             if (Number(payload.seatsAvailable) > Number(payload.seatCapacity)) {
+                console.log('Flight creation failed: Seats available exceeds capacity.');
                 return res.status(400).json({
                     success: false,
                     message: 'Seats available cannot exceed seat capacity.'
@@ -48,52 +52,50 @@ exports.createFlight = async (req, res) => {
             }
         }
 
-        // this will create a new flight doc using data from req body
+        // create a new flight doc using data from req body
         const newFlight = await Flight.create(payload);
 
-        // success
+        console.log('New Flight created:', newFlight.flightNumber, 'Route:', newFlight.origin, '->', newFlight.destination);
+        
         return res.status(201).json({
             success: true,
             message: 'Flight created successfully.',
             data: newFlight
         });
     } catch (error) {
-        // to handle validation errors (e.g. missing required fields, unique constraint violations)
         if (error.name === 'ValidationError') {
+            console.error('Flight creation validation error:', error.message);
             return res.status(400).json({
                 success: false, 
                 message: error.message
             });
         }
-
-        // for the duplicate key error (flightNumber unique constraint)
         if (error.code === 11000) {
+            console.log('Flight creation failed: Duplicate flight number.');
             return res.status(400).json({
                 success: false,
                 message: 'Duplicate key error: Flight number already exists.'
             });
         }
-
-        // for gen server error
+        console.error('Server error during flight creation:', error);
         return res.status(500).json({
             success: false,
             message: 'Server error during flight creation.',
             error: error.message
         });
-    
-    
     }   
 };
 
 exports.saveSearchResults = async (req, res) => {
     try {
         const flights = Array.isArray(req.body) ? req.body : req.body.flights;
+        console.log('Received', flights.length, 'flights to save/update.');
 
         if (!Array.isArray(flights) || flights.length === 0) {
+            console.log('No flights provided to save.');
             return res.status(400).json({ success: false, message: 'No flights provided to save.' });
         }
 
-        // Build bulk operations to upsert by flightNumber to avoid duplicates
         const ops = flights.map(f => {
             const update = {
                 flightNumber: f.flightNumber,
@@ -119,6 +121,8 @@ exports.saveSearchResults = async (req, res) => {
 
         const result = await Flight.bulkWrite(ops, { ordered: false });
 
+        console.log('Flights saved/updated. Upserted:', result.upsertedCount, 'Modified:', result.modifiedCount);
+
         return res.status(200).json({
             success: true,
             message: 'Flights saved/updated successfully.',
@@ -126,6 +130,7 @@ exports.saveSearchResults = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Server error while saving flights:', error);
         return res.status(500).json({
             success: false,
             message: 'Server error while saving flights.',
@@ -137,6 +142,7 @@ exports.saveSearchResults = async (req, res) => {
 exports.getAllFlights = async (req, res) => {
     try {
         const flights = await Flight.find().sort({ schedule: 1});
+        console.log('Fetched', flights.length, 'flights from database.');
 
         return res.status(200).json({
             success: true,
@@ -144,7 +150,7 @@ exports.getAllFlights = async (req, res) => {
             data: flights
         });
     } catch (error) {
-        // gen server error
+        console.error('Server error while fetching flights:', error);
         return res.status(500).json({
             success: false,
             message: 'Server error while fetching flights.',
@@ -159,12 +165,15 @@ exports.getFlightById = async (req, res) => {
         const flight = await Flight.findById(req.params.id);
 
         if (!flight) {
+            console.log('Flight not found with ID:', req.params.id);
             return res.status(404).json({
                 success: false, 
                 message: `Flight not found with ID: ${req.params.id}`
             });
         }
 
+        console.log('Flight details fetched for', flight.flightNumber);
+        
         // success response
         return res.status(200).json({
             success:true,
@@ -172,15 +181,16 @@ exports.getFlightById = async (req, res) => {
         });
 
     } catch (error) {
-        // for handling invalid id formats
         if (error.kind === 'ObjectId') {
+            console.log('Flight not found (invalid ID format):', req.params.id);
             return res.status(404).json({
                 success: false,
                 message: 'Flight not found (invalid Id format).'
             });
         }
 
-        // gen server error
+        console.error('Server error while fetching flight:', error);
+
         return res.status(500).json({
             success: false,
             message: 'Server error while fetching flight.',
@@ -195,6 +205,7 @@ exports.updateFlight = async (req, res) => {
         if (req.body.price !== undefined) {
             req.body.price = Number(req.body.price);
             if (Number.isNaN(req.body.price) || req.body.price < 0) {
+                console.log('Flight update failed: Invalid price.');
                 return res.status(400).json({
                     success: false,
                     message: 'Price must be a non-negative number.'
@@ -205,6 +216,7 @@ exports.updateFlight = async (req, res) => {
         if (req.body.seatCapacity !== undefined) {
             req.body.seatCapacity = Number(req.body.seatCapacity);
             if (Number.isNaN(req.body.seatCapacity) || req.body.seatCapacity < 1) {
+                console.log('Flight update failed: Invalid seat capacity.');
                 return res.status(400).json({
                     success: false,
                     message: 'Seat capacity must be a positive number.'
@@ -215,6 +227,7 @@ exports.updateFlight = async (req, res) => {
         if (req.body.seatsAvailable !== undefined) {
             req.body.seatsAvailable = Number(req.body.seatsAvailable);
             if (Number.isNaN(req.body.seatsAvailable) || req.body.seatsAvailable < 0) {
+                console.log('Flight update failed: Invalid seats available.');
                 return res.status(400).json({
                     success: false,
                     message: 'Seats available must be zero or a positive number.'
@@ -227,6 +240,7 @@ exports.updateFlight = async (req, res) => {
 
         if (seatCapacity !== undefined && seatsAvailable !== undefined) {
             if (Number(seatsAvailable) > Number(seatCapacity)) {
+                console.log('Flight update failed: Seats available exceeds capacity.');
                 return res.status(400).json({
                     success: false,
                     message: 'Seats available cannot exceed seat capacity.'
@@ -239,27 +253,29 @@ exports.updateFlight = async (req, res) => {
         }
 
         const flight = await Flight.findByIdAndUpdate(req.params.id, req.body, {
-            new: true, // returns new doc instead of old
-            runValidators: true // reruns mongoose validation on update
+            new: true, 
+            runValidators: true 
         });
 
         if (!flight) {
+            console.log('Flight update failed: ID not found.');
             return res.status(404).json({
                 success: false,
                 message: `Flight not found with Id: ${req.params.id}`
             });
 
         }
+        
+        console.log('Flight updated:', flight.flightNumber, 'ID:', flight._id);
 
-        // success response
         return res.status(200).json({
             success: true, 
             message: 'Flight updated successfully.',
             data: flight
         });
     } catch (error) {
-        // will handle validation error or dup key error during updates
         if (error.name === 'ValidationError' || error.code === 11000) {
+            console.error('Flight update validation/duplicate error:', error);
             return res.status(400).json({
                 success:false,
                 message: error.message.includes('11000') ? 
@@ -268,7 +284,8 @@ exports.updateFlight = async (req, res) => {
 
         }
 
-        // for gen server errors
+        console.error('Server error during flight update:', error);
+
         return res.status(500).json({
             success: false,
             message: 'Server error during flight update.',
@@ -282,12 +299,15 @@ exports.deleteFlight = async (req, res) => {
         const flight = await Flight.findByIdAndDelete(req.params.id);
     
         if (!flight) {
+            console.log('Flight deletion failed: ID not found.');
             return res.status(404).json({
                 success: false,
                 message: `Flight not found with ID: ${req.params.id}`
             });
 
         }
+        
+        console.log('Flight deleted: ID', req.params.id);
 
         return res.status(200).json({
             success: true,
@@ -295,7 +315,8 @@ exports.deleteFlight = async (req, res) => {
         });
 
     } catch (error) {
-        // gen server error
+        console.error('Server error during flight deletion:', error);
+
         return res.status(500).json({
             success: false,
             message: 'Server error during flight deletion.',
@@ -309,10 +330,13 @@ exports.checkFlightSaved = async (req, res) => {
         const flightNumber = req.params.flightNumber;
 
         if (!flightNumber) {
+            console.log('Check flight saved failed: Missing flight number.');
             return res.status(400).json({ success: false, message: 'flightNumber is required in params.' });
         }
 
         const flight = await Flight.findOne({ flightNumber: flightNumber });
+        
+        console.log('Check flight saved result for', flightNumber, ':', !!flight ? 'found' : 'not found');
 
         return res.status(200).json({
             success: true,
@@ -320,6 +344,7 @@ exports.checkFlightSaved = async (req, res) => {
             data: flight || null
         });
     } catch (error) {
+        console.error('Server error while checking flight saved status:', error);
         return res.status(500).json({
             success: false,
             message: 'Server error while checking flight.',
