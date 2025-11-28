@@ -80,7 +80,7 @@
       const pnr = document.getElementById("pnrInput").value.trim();
       const lastName = document.getElementById("lastNameInput").value.trim();
 
-      const response = await fetch('/checkin', {
+      const response = await fetch('/api/checkin', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pnr, lastName })
@@ -107,4 +107,5 @@
 </body>
 
 </html>
+
 
