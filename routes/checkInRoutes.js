@@ -8,7 +8,7 @@ router.get('/checkin', (req, res) => {
     res.render('checkin/checkin'); 
 });
 
-router.post('/checkin', async (req, res) => {
+router.post('/api/checkin', async (req, res) => {
     try {
         const { pnr, lastName } = req.body;
 
@@ -93,5 +93,6 @@ router.post('/checkin', async (req, res) => {
         });
     }
 });
+
 
 module.exports = router;
