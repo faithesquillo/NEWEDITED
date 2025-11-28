@@ -131,7 +131,7 @@
                 </div>
 
                 <button type="button" id="saveChangesBtn" class="btn btn-primary w-100">Save Changes</button>
-                <a href="/reservations/{{reservation._id}}?userId={{user._id}}"
+                <a href="/reservations/{{reservation._id}}"
                     class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
             </div>
 
@@ -317,14 +317,14 @@
                             paymentModal.hide();
                             $('#formMessage').html('<div class="alert alert-success">Payment successful! Booking updated.</div>');
                             setTimeout(() => {
-                                window.location.href = `/reservations/${resId}?userId={{userId}}`;
+                                window.location.href = `/reservations/${resId}`;
                             }, 1000);
                         });
 
                     } else {
                         $('#formMessage').html('<div class="alert alert-success">Booking updated successfully!</div>');
                         setTimeout(() => {
-                            window.location.href = `/reservations/${resId}?userId={{userId}}`;
+                            window.location.href = `/reservations/${resId}`;
                         }, 1000);
                     }
                 })
