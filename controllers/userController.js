@@ -207,4 +207,37 @@ exports.changePassword = async (req, res) => {
         console.error('Password change error for user ID:', userId, err);
         return res.status(500).json({ success: false, message: 'Server error during password update.' });
     }
+
+};
+
+exports.loginUser = async(req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
+    try {
+        const User = require('../models/User');
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        if (req.session) {
+            req.session.user = user;
+        }
+
+        return res.status(200).json({ success: true, message: 'Login successful!', user });
+
+    } catch (err) {
+        console.error('Login error:', err);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
 };
