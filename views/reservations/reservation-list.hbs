@@ -86,17 +86,17 @@
               <p class="text-muted mb-0">{{arrivalTime}}</p>
             </div>
           </div>
-
+        
         <h6 class="fw-bold mb-0 mt-2">Passenger:<br> {{firstName}} {{lastName}}</h6>
           <p class="text-muted mb-0"><strong>Status:</strong> {{status}}</p>
         </div>
 
         <!-- Buttons -->
         <div class="text-center mt-3">
-          <a href="/reservations/{{_id}}?userId={{../userId}}" class="btn btn-primary me-2">View Details</a>
+          <a href="/reservations/{{_id}}" class="btn btn-primary me-2">View Details</a>
 
           {{#ifCond status '!=' 'cancelled'}}
-          <form action="/reservations/{{_id}}/cancel?userId={{../userId}}" method="POST" style="display:inline;">
+          <form action="/reservations/{{_id}}/cancel" method="POST" style="display:inline;">
             <button type="submit" class="btn btn-danger">Cancel</button>
           </form>
           {{else}}
@@ -112,37 +112,7 @@
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const user = {{{ json user }}};
-  console.log("SESSION USER:", user);
 
-  const resLink = document.querySelector('a.nav-link[href="/reservations"]');
-  if (resLink && user) {
-    if (user.role === "Admin") {
-      resLink.href = "/reservations";
-    } else {
-      resLink.href = `/reservations?userId=${user._id}`;
-    }
-  }
-
-  document.querySelectorAll('a[href*="/reservations/"]').forEach(a => {
-    if (user && user.role !== "Admin") {
-      const url = new URL(a.href, window.location.origin);
-      url.searchParams.set('userId', user._id);
-      a.href = url.toString();
-    }
-  });
-  document.querySelectorAll('form[action*="/reservations/"]').forEach(form => {
-    if (user && user.role !== "Admin") {
-      const url = new URL(form.action, window.location.origin);
-      url.searchParams.set('userId', user._id);
-      form.action = url.toString();
-    }
-  });
-  });
-</script>
 
 </body>
-
 </html>
