@@ -102,15 +102,21 @@ describe('Reservation creation and cancellation', () => {
                 userId: 'user_123',
                 baggage: 10,
                 mealOption: { label: 'Vegan', price: 20 }
-            }
+            },
+            session: { user: { _id: 'user_123' } }
         };
         const res = mockResponse();
 
-        Flight.findById.mockResolvedValue({ _id: 'flight_123', price: 200 });
+        Flight.findById.mockResolvedValue({ _id: 'flight_123', price: 200, schedule: new Date(Date.now() + 86400000) });
 
         Reservation.findOne.mockResolvedValue(null);
 
-        const mockSavedReservation = {...req.body, _id: 'res_new_123', pnr: 'MOCK-PNR' };
+        const mockSavedReservation = {
+            ...req.body,
+            seat: { code: '1A', isPremium: true },
+            _id: 'res_new_123',
+            pnr: 'MOCK-PNR'
+        };
 
         const saveSpy = jest.fn().mockResolvedValue(mockSavedReservation);
         Reservation.mockImplementation(() => ({
@@ -128,10 +134,14 @@ describe('Reservation creation and cancellation', () => {
     it('pass if user successfully cancelled a reservation', async() => {
         const req = {
             params: { id: 'res_123' },
-            query: { userId: 'user_123' }
+            query: { userId: 'user_123' },
+            session: { user: { _id: 'user_123' } }
         };
+
         const res = {
-            redirect: jest.fn()
+            redirect: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn()
         };
 
         Reservation.findByIdAndUpdate.mockResolvedValue({ _id: 'res_123' });
@@ -161,20 +171,26 @@ describe('Reservation creation and cancellation', () => {
     it('pass if reservation has been successfully updated', async() => {
         const req = {
             params: { id: 'res_123' },
-            body: { seat: '1A' }
+            body: { seat: '1A', baggage: 20 }
         };
         const res = mockResponse();
 
         const mockRes = {
             _id: 'res_123',
             flightId: 'flight_555',
-            seat: { code: '10C' },
+            seat: { code: '10C', isPremium: false },
+
+            baggage: { kg: 0 },
+            meal: { label: 'None', price: 0 },
+
             bill: { total: 100 },
             save: jest.fn().mockResolvedValue({
                 bill: { total: 130 },
-                _id: 'res_123'
+                _id: 'res_123',
+                baggage: { kg: 20 }
             })
         };
+
         Reservation.findById.mockResolvedValue(mockRes);
 
         Reservation.findOne.mockResolvedValue(null);
