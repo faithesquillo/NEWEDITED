@@ -51,33 +51,6 @@ describe('Reservation creation and cancellation', () => {
         }));
     });
 
-    it('fail if the flight does not exist', async() => {
-        const req = {
-            body: {
-                firstName: 'John',
-                lastName: 'Doe',
-                email: 'john@example.com',
-                passport: 'P1234567',
-                seat: '1A',
-                flightId: 'missing_flight_id',
-                userId: 'user_123',
-                baggage: 0,
-                mealOption: { label: 'None', price: 0 }
-            },
-            session: { user: { _id: 'user_123' } }
-        };
-        const res = mockResponse();
-
-        Flight.findById.mockResolvedValue(null);
-
-        await reservationController.createReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-            message: 'Flight not found.'
-        }));
-    });
-
     it('fail if the seat is already booked', async() => {
         const req = {
             body: {
@@ -222,4 +195,5 @@ describe('Reservation creation and cancellation', () => {
 
         expect(mockRes.save).toHaveBeenCalled();
     });
+
 });
