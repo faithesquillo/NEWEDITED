@@ -26,7 +26,8 @@ router.get('/book/:flightNumber', isAuthenticated(), async(req, res) => {
         res.render('reservations/reservation', {
             flight: flight,
             pageTitle: 'Book Flight',
-            occupiedSeats: JSON.stringify(occupiedSeats)
+            occupiedSeats: JSON.stringify(occupiedSeats),
+            user: req.session.user 
         });
     } catch (err) {
         console.error(err);
@@ -123,6 +124,7 @@ router.get('/:id/edit', async(req, res) => {
          res.render('reservations/reservation-edit', {
         reservation,
         occupiedSeats: JSON.stringify(otherReservations.map(r => r.seat.code)),
+        user: req.session.user 
     });
 
     } catch (err) {
@@ -205,7 +207,7 @@ router.get('/', isAuthenticated(), async (req, res) => {
         }
 
         const reservations = await Reservation.find(filter).populate('flightId').lean();
-        res.render('reservations/reservation-list', { reservations });
+        res.render('reservations/reservation-list', { reservations, user: req.session.user });
     } catch (err) {
         console.error(err);
         res.status(500).send('Error fetching reservations');
@@ -218,7 +220,7 @@ router.get('/users/:userId/reservations', isAdmin, async (req, res) => {
         if (!user) return res.status(404).send('User not found');
 
         const reservations = await Reservation.find({ userId: user._id }).populate('flightId').lean();
-        res.render('userReservations', { title: `${user.fullName}'s Reservations`, reservations }); 
+        res.render('userReservations', { title: `${user.fullName}'s Reservations`, reservations, user: req.session.user }); 
 
     } catch (err) {
         console.error(err);
@@ -232,7 +234,8 @@ router.get('/:id', async (req, res) => {
         if (!reservation) return res.status(404).send('Reservation not found');
 
         res.render('reservations/reservation-details', { 
-            reservation
+            reservation, 
+            user: req.session.user 
         });
 
     } catch (err) {
@@ -245,7 +248,7 @@ router.post('/:id/cancel', async(req, res) => {
     await Reservation.findByIdAndUpdate(req.params.id, { status: 'cancelled' });
 
     const userId = req.session.user._id; 
-    res.redirect(`/reservations?userId=${userId}`);
+    res.redirect('/reservations');
 });
 
 module.exports = router;
