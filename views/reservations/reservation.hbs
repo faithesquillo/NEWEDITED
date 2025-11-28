@@ -180,6 +180,7 @@
                     <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
                     {{else ifEquals user.role "User"}}
                     <li class="nav-item"><a class="nav-link" href="/searchPage">Search Flights</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/checkin">Online Check-in</a></li>
                     <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations</a></li>
                     <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
                     {{/ifEquals}}
@@ -208,13 +209,12 @@
                 <div class="col-md-6">
                     <label class="form-label" for="firstName">First Name</label>
                     <input type="text" id="firstName" class="form-control" placeholder="Juan" value="{{user.firstName}}"
-                        required minlength="2" pattern="^[A-Za-z][A-Za-z\s'-]{1,}$">
+                        required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="lastName">Last Name</label>
                     <input type="text" id="lastName" class="form-control" placeholder="Dela Cruz"
-                        value="{{user.lastName}}" required minlength="2"
-                        pattern="^[A-Za-z][A-Za-z\s'-]{1,}$">
+                        value="{{user.lastName}}" required>
                 </div>
             </div>
 
@@ -226,8 +226,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="passport">Passport Number</label>
-                    <input type="text" id="passport" class="form-control" placeholder="A1234567" required
-                        pattern="^[A-Za-z0-9]{7,9}$">
+                    <input type="text" id="passport" class="form-control" placeholder="A1234567" required>
                 </div>
             </div>
 
@@ -541,9 +540,8 @@
                     $seatGrid.find('.seat-btn.active').removeClass('active');
 
                     // Redirect to the reservation details page
-                    const userIdParam = user?._id ? `?userId=${user._id}` : '';
                     setTimeout(() => {
-                        window.location.href = `/reservations/${resId}${userIdParam}`;
+                        window.location.href = `/reservations/${resId}`;
                     }, 1000);
                 });
             })
@@ -579,7 +577,7 @@
         if (user.role === "Admin") {
             resLink.href = "/reservations";
         } else {
-            resLink.href = `/reservations?userId=${user._id}`;
+            resLink.href = `/reservations`;
         }
     }
         });
