@@ -107,17 +107,21 @@
         </span>
       </p>
 
+      {{#if reservation.checkedIn}}
+        <h4><span class="badge bg-success">Checked In - Boarding Pass: {{reservation.boardingPassNo}}</span></h4>
+      {{/if}}
+
       <div class="text-center mt-4">
         {{#if user._id}}
-        <a href="/reservations?userId={{user._id}}" class="btn btn-secondary me-2">Back to List</a>
+        <a href="/reservations" class="btn btn-secondary me-2">Back to List</a>
         {{else}}
         <a href="/reservations" class="btn btn-secondary me-2">Back to List</a>
         {{/if}}
       
         {{#ifCond reservation.status '!=' 'cancelled'}}
       
-        <a href="/reservations/{{reservation._id}}/edit?userId={{user._id}}" class="btn btn-primary me-2">Edit Booking</a>
-        <form action="/reservations/{{reservation._id}}/cancel?userId={{user._id}}" method="POST" style="display:inline;">
+        <a href="/reservations/{{reservation._id}}/edit" class="btn btn-primary me-2">Edit Booking</a>
+        <form action="/reservations/{{reservation._id}}/cancel" method="POST" style="display:inline;">
           <button type="submit" class="btn btn-danger">Cancel</button>
         </form>
         {{else}}
@@ -135,37 +139,6 @@
 
 </body>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const resLink = document.querySelector('a.nav-link[href="/reservations"]');
-    const navbarList = document.querySelector('.navbar-nav');
-    const navbarBrand = document.querySelector('.navbar-brand');
-
-    const user = {
-      _id: "{{userId}}", 
-      role: "{{user.role}}" 
-    };
-
-    if (user.role === "Admin") {
-      if (navbarBrand) {
-        navbarBrand.textContent = 'Online Airline Ticketing System - Admin';
-      }
-      if (navbarList) {
-        navbarList.innerHTML = `
-          <li class="nav-item"><a class="nav-link" href="/adminSearchPage">Search & Manage Flights</a></li>
-          <li class="nav-item"><a class="nav-link" href="/userManagement">User Management</a></li>
-          <li class="nav-item"><a class="nav-link active" href="/reservations">Reservations List</a></li>
-          <li class="nav-item"><a class="nav-link" href="/userProfile">Profile</a></li>
-        `;
-      }
-      // Ensure Reservations link works for Admin
-      if (resLink) resLink.href = "/reservations";
-    } else if (user._id) { // Use injected user ID
-      // Sets reservation link to user's reservations
-      if (resLink) resLink.href = `/reservations?userId=${user._id}`;
-    }
-  });
-</script>
 
 </html>
 
